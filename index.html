@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SE Competency Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: #032d60;
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .view-switch {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.1);
+            padding: 0.25rem;
+            border-radius: 6px;
+        }
+
+        .view-switch button {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .view-switch button.active {
+            background: rgba(255,255,255,0.2);
+            font-weight: 600;
+        }
+
+        .team-select {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .team-select select {
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: none;
+            background: white;
+            font-size: 1rem;
+            min-width: 200px;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #0070d2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #005fb2;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #032d60;
+        }
+
+        .btn-secondary:hover {
+            background: #e8f3ff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .team-management {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .team-management h2 {
+            margin-bottom: 1rem;
+            color: #032d60;
+        }
+
+        .team-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f4f6f9;
+            border-radius: 20px;
+            border: 1px solid #d8dde6;
+        }
+
+        .team-member button {
+            background: none;
+            border: none;
+            color: #c23934;
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .add-member-form {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .add-member-form input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #d8dde6;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .category-section {
+            background: white;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .category-header {
+            background: #032d60;
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .category-header h2 {
+            font-size: 1.4rem;
+        }
+
+        .category-icon {
+            font-size: 2rem;
+        }
+
+        .competency-grid {
+            padding: 1.5rem;
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .competency-card {
+            border: 1px solid #d8dde6;
+            border-radius: 6px;
+            padding: 1.5rem;
+            background: #fafbfc;
+        }
+
+        .competency-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+
+        .competency-title {
+            flex: 1;
+        }
+
+        .competency-title h3 {
+            color: #032d60;
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .competency-level {
+            font-size: 0.9rem;
+            color: #54698d;
+            font-weight: 500;
+        }
+
+        .rating-section {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .rating-row {
+            display: grid;
+            grid-template-columns: 120px 200px 1fr;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .rating-label {
+            font-weight: 600;
+            color: #54698d;
+            padding-top: 0.5rem;
+        }
+
+        .rating-select {
+            position: relative;
+        }
+
+        .rating-select select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d8dde6;
+            border-radius: 4px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .rating-description {
+            padding: 0.75rem;
+            background: #e8f3ff;
+            border-left: 3px solid #0070d2;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #032d60;
+            line-height: 1.5;
+        }
+
+        .rating-description.empty {
+            background: #f4f6f9;
+            border-left-color: #d8dde6;
+            color: #54698d;
+            font-style: italic;
+        }
+
+        .notes-section {
+            margin-top: 1rem;
+            display: grid;
+            gap: 1rem;
+        }
+
+        .notes-row {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .notes-row textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 0.75rem;
+            border: 1px solid #d8dde6;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+        }
+
+        .notes-row textarea:focus {
+            outline: none;
+            border-color: #0070d2;
+            box-shadow: 0 0 0 3px rgba(0,112,210,0.1);
+        }
+
+        .level-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .level-limited {
+            background: #fef7e0;
+            color: #a86403;
+        }
+
+        .level-standard {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .level-intermediate {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
+        .level-advanced {
+            background: #e0cffc;
+            color: #5a1e9e;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #54698d;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .employee-view-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .dashboard {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .dashboard h2 {
+            color: #032d60;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: #fafbfc;
+            padding: 1.5rem;
+            border-radius: 6px;
+            border: 1px solid #d8dde6;
+        }
+
+        .chart-container h3 {
+            color: #032d60;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #0070d2 0%, #032d60 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #d8dde6;
+        }
+
+        .comparison-table th {
+            background: #f4f6f9;
+            font-weight: 600;
+            color: #032d60;
+        }
+
+        .comparison-table tr:hover {
+            background: #fafbfc;
+        }
+
+        .gap-indicator {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .gap-positive {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .gap-neutral {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .gap-negative {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @media (max-width: 768px) {
+            .rating-row {
+                grid-template-columns: 1fr;
+            }
+
+            .notes-row {
+                grid-template-columns: 1fr;
+            }
+
+            .rating-label {
+                padding-top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SE Competency Tracker</h1>
+        <div class="header-controls">
+            <div class="view-switch">
+                <button id="dashboardViewBtn" onclick="switchView('dashboard')">Dashboard</button>
+                <button id="managerViewBtn" class="active" onclick="switchView('manager')">Manager View</button>
+                <button id="employeeViewBtn" onclick="switchView('employee')">Employee View</button>
+            </div>
+            <div class="team-select">
+                <label for="teamMemberSelect">Team Member:</label>
+                <select id="teamMemberSelect" onchange="loadTeamMember()">
+                    <option value="">Select a team member...</option>
+                </select>
+            </div>
+            <span class="employee-view-badge" id="employeeViewBadge" style="display: none;"></span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="team-management" id="teamManagement">
+            <h2>Team Management</h2>
+            <div class="add-member-form">
+                <input type="text" id="newMemberName" placeholder="Enter team member name...">
+                <button class="btn btn-primary" onclick="addTeamMember()">Add Team Member</button>
+            </div>
+            <div class="team-list" id="teamList"></div>
+        </div>
+
+        <div id="evaluationContent"></div>
+    </div>
+
+    <script>
+        const competencies = {
+            "Customer Communication": {
+                icon: "💬",
+                items: [
+                    {
+                        name: "Contextual Communication",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Understands persona-driven approaches to convey a technical concept and its value. Creates basic user journey storylines, re-using out-of-the-box demo scripts.",
+                            "Standard": "Applies fundamental storytelling concepts to create compelling narrative flows and user journeys. Delivers customer demos ensuring use of standard Customer 360 messaging relevant to a diverse audience.",
+                            "Intermediate": "Articulates the value of a strategic point of view with customers. Creates vivid customer personas with immersive relevant narratives and user journeys that emphasize the power of a perfect user experience and resonate with senior line of business leaders.",
+                            "Advanced": "Incorporates the creative vision, business impact and emotional power into storyboards that resonate with an executive-level audience. Moderates a creative process to develop impactful storyboards in a larger team."
+                        }
+                    },
+                    {
+                        name: "Value Articulation",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Shares confidently key Salesforce metrics pertaining to the impact of relevant products and features demonstrated.",
+                            "Standard": "Asks for standard customer metrics during discovery. Leverages out-of-the-box ROI calculators to understand potential customer impact of relevant products while using assumptions on unknowns. Shares out-of-the-box customer stories from the customer's industry to highlight the relevant benefits.",
+                            "Intermediate": "Skillfully collects comprehensive relevant metrics during discovery in order to build custom ROIs for customers. Relates the benefits to key and relevant customer pain points by deeply understanding their business. Validates and iterates on added value with customers. Shares targeted customer stories and gets customers' attention by speaking their industry language. Showcases Proof of Concepts.",
+                            "Advanced": "Possesses deep knowledge of relevant pain points and KPIs of the customer's (sub-)industry. Leverages industry and process expertise to build hyper-relevant ROIs that resonate with customers. Constantly seeks feedback on value from customers throughout the sales cycle and co-creates with them. Leverages a network of customers to connect and share success stories with each other."
+                        }
+                    },
+                    {
+                        name: "Objection Handling",
+                        expectedLevel: "Advanced",
+                        levels: {
+                            "Limited": "Practices basic objections handling methods to uncover changing customer needs. Seeks help from senior team members to respond appropriately.",
+                            "Standard": "Builds trust with customers by listening first, asking follow-up questions to uncover challenges and responding convincingly to objections mainly related to Salesforce's technology.",
+                            "Intermediate": "Masters objection handling techniques relating to the technology and implementation, notably by being actively prepared for them.",
+                            "Advanced": "Masters complex objections from C-level executives with immediate credibility and, if needed, pulls in the right support resources."
+                        }
+                    },
+                    {
+                        name: "Facilitation",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Applies standard presentation and whiteboarding techniques. Effectively captures and summarizes discussion results. Creates supporting media that matches the target audience level in language, information detail and messaging.",
+                            "Standard": "Communicates effectively meeting goals and approach taken. Listens attentively and ensures audience participation. Engages the audience with anecdotes & the use of open questions. Can start and end the presentation with impact. Masters impactful ways of presenting: media usage, verbal/non-verbal communication, body/hand position, voice modulation, etc.",
+                            "Intermediate": "Shapes presentations effectively to target audience type, knowledge context and interest. Effectively facilitates group meetings and various workshop types. Leads the workshop audience to work towards a joint goal and to contribute to results. Handles a large audience and gets clear buy-in or next steps at the end. Creates and delivers targeted presentations on virtual or physical events to a large audience of customers, prospects or partners.",
+                            "Advanced": "Effectively facilitates group meetings and workshops up to complex and/or strategic scope. Chooses suitable techniques to spark group creativity as well as to structure ideas and to set priorities. Balances different stakeholders/parties, handles objections and tensions in the discussion. Creates and delivers visionary presentations on virtual or physical events that contain forward-thinking points of view on technical, methodological or industry subjects."
+                        }
+                    }
+                ]
+            },
+            "Research & Discovery": {
+                icon: "🔍",
+                items: [
+                    {
+                        name: "Differentiation",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Has fundamental knowledge of the landscape of main competing vendors and their respective positioning and portfolio strengths.",
+                            "Standard": "Knows Salesforce's main competitors across all Salesforce products and/or industries aligned to and their market positioning. Uses internal and external resources to identify competitive advantages in specific sales situations.",
+                            "Intermediate": "Has a comprehensive overview of competitors, their products, and market positioning. Is aware of key competitors' strengths and weaknesses and their typical strategy. Is experienced to support a sales team to build a strategy and define specific actions and narrative in a competitive deal situation. Delivers cross-cloud enablement on the competition.",
+                            "Advanced": "Takes the lead in creating a powerful competitive message for large deals he/she leads and/or support that targets decision-makers as well as functional and IT-level influencers. Contributes to communication formats to effectively relate Salesforce's competitive advantage to specific customer benefits. Maintains knowledge on smaller competitors that are specific to relevant products, industries or customer process domains."
+                        }
+                    },
+                    {
+                        name: "Industry Foundations",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Has a fundamental understanding of a vertical industry, its leading players and its key business models. Is aware of peculiarities and terminology specific to the industry and knows how to apply them properly.",
+                            "Standard": "Has a solid understanding of revenue streams, industry trends, market players and value chain stages in a particular industry. Effectively uses the knowledge in opportunity assessment, account research and customer message creation. Masters Salesforce industry solutions or IDOs on a practitioner level. Applies industry experience in customer situations to foster trust and create deep customer insights. Maintains a broad overview of third-party solutions that are specific to the respective industry.",
+                            "Intermediate": "Has a deep understanding of common industry-specific business process templates and IT landscape architectures. Masters Salesforce industry solutions and IDOs on a Blackbelt level. Identifies customer pressures and technology demand from comprehensive industry insights. Challenges customers up to executive level based on own industry experience. Connects the benefit of customer-centric transformation steps to the trends and dynamics in the particular industry. Actively contributes to growing industry knowledge and available assets within Salesforce.",
+                            "Advanced": "Identifies the correlation between macro-trends and the impact on the industry thus derives strategies for market players to adopt. Contributes to Salesforce's industry message with personal viewpoints on the industry and the relevance of customer relationships and customer orientation. Maintains a network of industry contacts inside and outside of the company, actively seeks knowledge exchange and visibility. Is able to position and discuss Salesforce's technology offering as part of an industry-specific enterprise architecture."
+                        }
+                    },
+                    {
+                        name: "Business Foundations",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Discovers a customer's business by mapping at a high level how the business is run, how they make money, and what the organizational structure is.",
+                            "Standard": "Researches in-depth a customer's business by identifying how the business is run, how they make money, and what the organizational structure is. Outlines primary KPIs used to manage a business across multiple functions. e.g. marketing, sales, service. Puts himself/herself into the shoes of his/her customer's customer. Incorporates learnings into the assets presented to customers.",
+                            "Intermediate": "Displays confident knowledge in a customer's business by having been exposed to how the business is run, how they make money, and what the organizational structure is. Possesses proficient knowledge of business challenges in the areas of strategy, process, policy, compliance, legal & audit.",
+                            "Advanced": "Is seen as a thought-leader on how to improve business processes internally and externally. Actively contributes to content creation at internal and external events with immediate credibility."
+                        }
+                    },
+                    {
+                        name: "Product Capabilities & Technical Architecture",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Displays solid expertise in functional scope, customization, technical foundation, product and license structure for products/industries aligned to. Has practical experience with a few horizontal or vertical ISV solutions in the context of customer demos.",
+                            "Standard": "Maintains comprehensive knowledge of the feature set, interfaces and underlying infrastructure capability for all relevant products and/or industries aligned to. Builds proficiency in customizing relevant Salesforce products and common third-party ISV extensions. Displays basic understanding of Salesforce relevant cross-cloud connectors and integration modules.",
+                            "Intermediate": "Maintains advanced knowledge of primary and secondary (sub-)products and/or industries aligned to, including integration patterns and technologies. Displays proficiency to position the functional scope of relevant Salesforce products. Explains and demonstrates sophisticated IT concepts like customer data management (C360) and artificial intelligence (Einstein) link to relevant products and their impact on the mechanics of customers' business. Possesses internal cross-cloud architecture expertise.",
+                            "Advanced": "Displays overarching technical expertise across the portfolio of Salesforce's product offerings. Possesses comprehensive knowledge of horizontal ISV solution ecosystem. Co-designs multi-cloud architectures with customers and their integration into heterogeneous technology landscapes."
+                        }
+                    }
+                ]
+            },
+            "Team Selling": {
+                icon: "👥",
+                items: [
+                    {
+                        name: "Orchestration",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Takes responsibility for the development of own commitments. Owns the relationship and SE effort with aligned AEs.",
+                            "Standard": "Aligns the team on common goals, deliverables and milestones. Organizes the use of the team to meet expectations and identifies difficulties, reprioritizing if needed. Owns the relationship and SE effort with aligned Sales Managers.",
+                            "Intermediate": "Balances interest of involved parties and drives convergence towards a consistent, impactful customer approach. Is able to adapt communication to stakeholder's personality and role to drive accountability to commitments. Builds relationships and emotional connections with functional stakeholders internally, customers and partners. Owns the relationship and SE effort with aligned Sales RVPs.",
+                            "Advanced": "Manages the work plan, sets timelines and milestones, and involves stakeholders to deliver on time (e.g. demo build from lower grade talent). Provides advice on procedures and the use of (non-)financial resources. Co-creates account strategy, messaging and key stakeholder communication. Owns the relationship and SE effort with aligned Sales AVPs."
+                        }
+                    },
+                    {
+                        name: "Project Monitoring",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Uses ways to align with other workstreams and identify potential roadblocks. Raises concerns if needed and solves conflict with empathy for mutual gain.",
+                            "Standard": "Monitors progress and takes appropriate actions to allocate and manage resources and time. Identifies project roadblocks and brainstorms with the team.",
+                            "Intermediate": "Applies methods to successfully track and manage milestones, deliverables and collaboration. Proactively identifies roadblocks and plans for them.",
+                            "Advanced": "Builds and maintains independent relationships with decision-makers and key influencers internally and externally as a trustworthy and valued advisor. Gathers appropriate resources from his/her network to resolve roadblocks"
+                        }
+                    },
+                    {
+                        name: "Consultative Selling",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Contributes effectively to the joint effort of a larger team.",
+                            "Standard": "Involves and coordinates multiple SE resources (Cloud SEs, QBranch, Architects, etc.) collaborating on a joint customer engagement. Actively looks for more opportunities to enable the immediate team.",
+                            "Intermediate": "Manages complex customer engagements across a variety of internal and external stakeholders (SE groups, CSG, BVS, Innovation Network, ISVs and Implementation Partners, etc.). Provides feedback to newer team members.",
+                            "Advanced": "Leads the entire (strategic and tactical) customer approach across all hierarchy levels in a complex account environment (e.g. briefing a project delivery team, keeping in contact with program architects, supporting a services bid team, engaging CSG and partners at the appropriate times to discuss, agree, brief, handover, evaluate, defining the scope and content for executive-level interactions (SICs, events, board-level meetings)). Enables various groups on best practices and mentors less experienced team members."
+                        }
+                    }
+                ]
+            },
+            "Action Orientation": {
+                icon: "⚡",
+                items: [
+                    {
+                        name: "Analytical Capabilities",
+                        expectedLevel: "Standard",
+                        levels: {
+                            "Limited": "Distinguishes between critical and irrelevant pieces of information. Gathers information from a variety of sources to reach a conclusion.",
+                            "Standard": "Uses structured logical thinking to persuade others and defend proposed solution. Identifies critical connections and patterns in information/data. Soundly analyses verbal and numerical data. Recognises causes and consequences of actions and events that are not readily apparent. Anticipates and thinks ahead about next steps.",
+                            "Intermediate": "Independently engages in tasks requiring interpretation of complex and often vague sets of information. Identifies gaps in information and makes assumptions in order to continue analysis and/or take action. Seeks a wide range of sources of information.",
+                            "Advanced": "Develops and shares conceptual frameworks that guide analysis. Draws sound conclusions using a mixture of analysis and experience."
+                        }
+                    },
+                    {
+                        name: "Change Management",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Demonstrates ability to cope with uncertainty within their work, with support from the team.",
+                            "Standard": "Demonstrates ability to adapt to new processes and changing customer requests. Is open to taking on new challenges as part of the change.",
+                            "Intermediate": "Embraces changes in their work and processes. Proactively adapts to the new normal, learns and shares from setbacks with their team.",
+                            "Advanced": "Demonstrates ability to direct change management and execute smoothly. Embraces change and positively influences individuals, internally and customers, affected by the change. Proactively manages new challenges and helps bring certainty and clarity to the team."
+                        }
+                    },
+                    {
+                        name: "Solution Orientation",
+                        expectedLevel: "Advanced",
+                        levels: {
+                            "Limited": "Helps deliver ad hoc tasks effectively with supervision and guidance.",
+                            "Standard": "Demonstrates ability to own pieces of internal and external presentations and deliver independently with accuracy. Performs well under pressure.",
+                            "Intermediate": "Demonstrates ability to accomplish complex customer deliverables independently, accurately and efficiently with appropriate tools. Drives results timely and demonstrates ability to multi-task.",
+                            "Advanced": "Demonstrates ability to perform with the pace of the business by taking on new assignments and opportunities without compromising existing accountabilities. Sets realistic and challenging objectives for the team and thoroughly supports the team in delivering results."
+                        }
+                    }
+                ]
+            },
+            "Solutioning": {
+                icon: "💡",
+                items: [
+                    {
+                        name: "Solution Discovery",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Participates in discovery interviews, applies exploratory discovery tools (e.g. questionnaires. discovery quip tools, etc.)",
+                            "Standard": "Leads discovery calls with interviewees in a functional role. Applies concepts of customer-centric discovery (qualitative interviews, ride-along, etc.).",
+                            "Intermediate": "Leads discovery calls with interviewees across the customer hierarchy up to executive level. Delivers confidently discovery workshops onsite and virtual. Leverages experience of the business to challenge the customers on their initial responses. Immerses him-/herself into a customer's business. Puts customer needs first by being in discovery mode throughout the sales cycle.",
+                            "Advanced": "Structures and orchestrates extensive discovery processes and workshops across multiple functional and technical levels on large deals. Takes strategic, political and individual motivations into account. Reads the room and uncovers known and unknown needs by balancing curiosity and a challenging mindset. Builds trust by successfully uncovering and challenging customers on hidden assumptions. Applies methods to aggregate and visualize discovery data effectively."
+                        }
+                    },
+                    {
+                        name: "Solution Design",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Summarizes key customer needs and points them out during out-of-the-box demos.",
+                            "Standard": "Summarizes and prioritizes customer needs then maps them out to common Salesforce products and features. Assembles the picture into compelling user journeys.",
+                            "Intermediate": "Leverages an extensive knowledge of advanced features across multiple relevant products to select the most appropriate ones that will address known and unknown customer needs uncovered during a discovery (workshop). Creates custom multi-cloud user journeys that are highly relevant for large-scale customers.",
+                            "Advanced": "Designs hyper-relevant user journeys abstracting the Salesforce proposed solution during the design phase, then collaborates with the extended team to propose a custom value-driven multi-cloud technology layer, balancing the latest innovations in the Salesforce portfolio of products as long-term visions with short-term proved gains of standard features."
+                        }
+                    },
+                    {
+                        name: "Solution Delivery",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Demonstrates relevant out-of-the-box product demos and articulates the value-add in the respective business environment, both in-person and virtually. Assist team members to build larger demos.",
+                            "Standard": "Demonstrates proficiently relevant Salesforce products in non-standard product demos as well as common third-party ISV extensions, focussing on the value-added. Effectively uses demo best practices to ensure a smooth experience for customers (e.g. incorporating gold nuggets to create \"aha\" moments, etc.). Builds comprehensive demos independently.",
+                            "Intermediate": "Uses best-in-class demo tools and techniques to deliver a stellar multi-cloud demo experience to customers (e.g. virtual reality, personal studio, OBS, etc.). Assists marketing content demos and webinars. Leverages the team to build advanced demos.",
+                            "Advanced": "Delivers visionary demos at internal and external events of the highest standards (e.g. Dreamforce, World Tours). Co-creates and seeks feedback from customers during and after the demo stage."
+                        }
+                    }
+                ]
+            },
+            "Value Selling": {
+                icon: "💰",
+                items: [
+                    {
+                        name: "Leveraging Customer Feedback",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Responds to customer needs in a timely, professional, helpful and courteous manner, regardless of customer attitude. Clearly shows customers that their perspectives are valued.",
+                            "Standard": "Follows up with customers during and after engagements to ensure that their needs have been met. Prioritizes customers' concerns and addresses them accordingly.",
+                            "Intermediate": "Looks for ways to add value beyond customers' immediate needs and acts on them. Proactively flags potential change in customer needs with the account team. Actively seeks feedback from customers throughout the sales cycle and beyond.",
+                            "Advanced": "Anticipates changing customer needs based on experience and plans for them. Acts as a seasoned adviser, providing independent opinions on complex customer needs and novel initiatives, and assists with handling priority issues. Advocates on behalf of customers to senior management, identifying approaches that meet customers' needs as well as those of Salesforce. Gives customers constructive feedback on problems encountered."
+                        }
+                    },
+                    {
+                        name: "Point of View (POV) Development",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Breakdowns a POV into its building blocks and provides input on building POVs with senior team members. Gets inspiration from existing POVs.",
+                            "Standard": "Creates compelling POVs independently and presents them to customers, seeking feedback. Identifies and re-uses best practices from similar use cases to build relevance.",
+                            "Intermediate": "Summarizes discovery input to create a custom POV, building in challenging innovation. Effectively balances short-term and long-term ambition. Creates and shares POV assets that benefit the immediate SE team.",
+                            "Advanced": "Leads POV creation workshops with customers. Leverages innovative POVs to open new logos. Is sought after internally and externally as a thought leader on developing innovative POVs and presents them at customer-facing events. Creates and shares POV assets that benefit the wider SE community."
+                        }
+                    },
+                    {
+                        name: "Value Realization",
+                        expectedLevel: "Intermediate",
+                        levels: {
+                            "Limited": "Displays understanding of Salesforce's organizational structure and portfolio with regards to customer support and services.",
+                            "Standard": "Confidently presents Salesforce's support and transformation service offering (CSM, Advisory, Implementation). Networks with key Salesforce service functions and stakeholders (e.g. Account CSM, Account Partner, Prof. Serv. Leader). Offers basic post-sales follow-up on key accounts.",
+                            "Intermediate": "Walks customers through benefits and challenges of implementation projects' structure, staffing and contracting. Recommends appropriate Salesforce transformation services offering and implementation models (SF vs. partner lead). Understands the portfolio, specialty and solution templates of relevant System Integrators. Proactively follows up post-sale and addresses customers' needs by pulling in the right resources.",
+                            "Advanced": "Outlines and positions transformation paths including involvement of advisory, implementation and integration resources. Leverages best practice implementation methodology (agile project management etc.) to make customer recommendations. Maintains a network of contacts into key software and system integration partners. Anticipates post-sales customers' needs and proactively proposes solutions to address them. Frequently checks in with customers to build trust."
+                        }
+                    }
+                ]
+            }
+        };
+
+        let currentView = 'manager';
+        let currentTeamMember = null;
+        let charts = {};
+
+        function initApp() {
+            loadTeamMembers();
+            const savedMember = localStorage.getItem('currentTeamMember');
+            if (savedMember) {
+                currentTeamMember = savedMember;
+                document.getElementById('teamMemberSelect').value = savedMember;
+                loadTeamMember();
+            }
+        }
+
+        function switchView(view) {
+            currentView = view;
+            document.getElementById('dashboardViewBtn').classList.toggle('active', view === 'dashboard');
+            document.getElementById('managerViewBtn').classList.toggle('active', view === 'manager');
+            document.getElementById('employeeViewBtn').classList.toggle('active', view === 'employee');
+            document.getElementById('teamManagement').style.display = view === 'manager' ? 'block' : 'none';
+            document.getElementById('employeeViewBadge').style.display = view === 'employee' ? 'inline-block' : 'none';
+
+            if (view === 'employee' && currentTeamMember) {
+                document.getElementById('employeeViewBadge').textContent = `Viewing as: ${currentTeamMember}`;
+            }
+
+            if (view === 'dashboard') {
+                renderDashboard();
+            } else {
+                renderEvaluations();
+            }
+        }
+
+        function loadTeamMembers() {
+            const teamMembers = JSON.parse(localStorage.getItem('teamMembers') || '[]');
+            const select = document.getElementById('teamMemberSelect');
+            const teamList = document.getElementById('teamList');
+
+            select.innerHTML = '<option value="">Select a team member...</option>';
+            teamList.innerHTML = '';
+
+            teamMembers.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member;
+                option.textContent = member;
+                select.appendChild(option);
+
+                const memberDiv = document.createElement('div');
+                memberDiv.className = 'team-member';
+                memberDiv.innerHTML = `
+                    <span>${member}</span>
+                    <button onclick="removeTeamMember('${member}')" title="Remove">×</button>
+                `;
+                teamList.appendChild(memberDiv);
+            });
+        }
+
+        function addTeamMember() {
+            const input = document.getElementById('newMemberName');
+            const name = input.value.trim();
+
+            if (!name) {
+                alert('Please enter a name');
+                return;
+            }
+
+            const teamMembers = JSON.parse(localStorage.getItem('teamMembers') || '[]');
+
+            if (teamMembers.includes(name)) {
+                alert('This team member already exists');
+                return;
+            }
+
+            teamMembers.push(name);
+            localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
+
+            input.value = '';
+            loadTeamMembers();
+        }
+
+        function removeTeamMember(name) {
+            if (!confirm(`Remove ${name} from the team? This will delete all their evaluations.`)) {
+                return;
+            }
+
+            const teamMembers = JSON.parse(localStorage.getItem('teamMembers') || '[]');
+            const index = teamMembers.indexOf(name);
+            if (index > -1) {
+                teamMembers.splice(index, 1);
+                localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
+                localStorage.removeItem(`evaluation_${name}`);
+
+                if (currentTeamMember === name) {
+                    currentTeamMember = null;
+                    document.getElementById('teamMemberSelect').value = '';
+                    renderEvaluations();
+                }
+
+                loadTeamMembers();
+            }
+        }
+
+        function loadTeamMember() {
+            const select = document.getElementById('teamMemberSelect');
+            currentTeamMember = select.value;
+            localStorage.setItem('currentTeamMember', currentTeamMember);
+
+            if (currentView === 'employee' && currentTeamMember) {
+                document.getElementById('employeeViewBadge').textContent = `Viewing as: ${currentTeamMember}`;
+            }
+
+            renderEvaluations();
+        }
+
+        function renderEvaluations() {
+            const content = document.getElementById('evaluationContent');
+
+            if (!currentTeamMember) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👤</div>
+                        <h2>Select a team member to view evaluations</h2>
+                        <p>Choose a team member from the dropdown above to start evaluating their competencies.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const evaluation = getEvaluation(currentTeamMember);
+            let html = '';
+
+            for (const [category, data] of Object.entries(competencies)) {
+                html += `
+                    <div class="category-section">
+                        <div class="category-header">
+                            <span class="category-icon">${data.icon}</span>
+                            <h2>${category}</h2>
+                        </div>
+                        <div class="competency-grid">
+                `;
+
+                data.items.forEach((competency, index) => {
+                    const key = `${category}_${competency.name}`;
+                    const managerRating = evaluation[key]?.managerRating || '';
+                    const employeeRating = evaluation[key]?.employeeRating || '';
+                    const managerNotes = evaluation[key]?.managerNotes || '';
+                    const employeeNotes = evaluation[key]?.employeeNotes || '';
+
+                    const managerDescription = managerRating ? competency.levels[managerRating] : '';
+                    const employeeDescription = employeeRating ? competency.levels[employeeRating] : '';
+
+                    html += `
+                        <div class="competency-card">
+                            <div class="competency-header">
+                                <div class="competency-title">
+                                    <h3>${competency.name}</h3>
+                                    <span class="competency-level">Expected: <span class="level-badge level-${competency.expectedLevel.toLowerCase()}">${competency.expectedLevel}</span></span>
+                                </div>
+                            </div>
+
+                            <div class="rating-section">
+                    `;
+
+                    if (currentView === 'manager') {
+                        html += `
+                            <div class="rating-row">
+                                <div class="rating-label">Manager Rating:</div>
+                                <div class="rating-select">
+                                    <select onchange="saveRating('${key}', 'managerRating', this.value)">
+                                        <option value="">Select level...</option>
+                                        <option value="Limited" ${managerRating === 'Limited' ? 'selected' : ''}>Limited</option>
+                                        <option value="Standard" ${managerRating === 'Standard' ? 'selected' : ''}>Standard</option>
+                                        <option value="Intermediate" ${managerRating === 'Intermediate' ? 'selected' : ''}>Intermediate</option>
+                                        <option value="Advanced" ${managerRating === 'Advanced' ? 'selected' : ''}>Advanced</option>
+                                    </select>
+                                </div>
+                                <div class="rating-description ${managerDescription ? '' : 'empty'}">
+                                    ${managerDescription || 'Select a level to see the description'}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    html += `
+                        <div class="rating-row">
+                            <div class="rating-label">${currentView === 'manager' ? 'Employee Self-Assessment:' : 'My Self-Assessment:'}</div>
+                            <div class="rating-select">
+                                <select onchange="saveRating('${key}', 'employeeRating', this.value)" ${currentView === 'manager' ? 'disabled' : ''}>
+                                    <option value="">Select level...</option>
+                                    <option value="Limited" ${employeeRating === 'Limited' ? 'selected' : ''}>Limited</option>
+                                    <option value="Standard" ${employeeRating === 'Standard' ? 'selected' : ''}>Standard</option>
+                                    <option value="Intermediate" ${employeeRating === 'Intermediate' ? 'selected' : ''}>Intermediate</option>
+                                    <option value="Advanced" ${employeeRating === 'Advanced' ? 'selected' : ''}>Advanced</option>
+                                </select>
+                            </div>
+                            <div class="rating-description ${employeeDescription ? '' : 'empty'}">
+                                ${employeeDescription || 'Select a level to see the description'}
+                            </div>
+                        </div>
+                    `;
+
+                    html += `
+                            </div>
+
+                            <div class="notes-section">
+                    `;
+
+                    if (currentView === 'manager') {
+                        html += `
+                            <div class="notes-row">
+                                <div class="rating-label">Manager Notes:</div>
+                                <textarea
+                                    placeholder="Add your notes about this competency..."
+                                    onchange="saveNotes('${key}', 'managerNotes', this.value)"
+                                >${managerNotes}</textarea>
+                            </div>
+                        `;
+                    }
+
+                    html += `
+                        <div class="notes-row">
+                            <div class="rating-label">${currentView === 'manager' ? 'Employee Notes:' : 'My Notes:'}</div>
+                            <textarea
+                                placeholder="Add your notes about this competency..."
+                                onchange="saveNotes('${key}', 'employeeNotes', this.value)"
+                                ${currentView === 'manager' ? 'readonly' : ''}
+                            >${employeeNotes}</textarea>
+                        </div>
+                    `;
+
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = html;
+        }
+
+        function getEvaluation(memberName) {
+            return JSON.parse(localStorage.getItem(`evaluation_${memberName}`) || '{}');
+        }
+
+        function saveEvaluation(memberName, evaluation) {
+            localStorage.setItem(`evaluation_${memberName}`, JSON.stringify(evaluation));
+        }
+
+        function saveRating(competencyKey, field, value) {
+            if (!currentTeamMember) return;
+
+            const evaluation = getEvaluation(currentTeamMember);
+            if (!evaluation[competencyKey]) {
+                evaluation[competencyKey] = {};
+            }
+            evaluation[competencyKey][field] = value;
+            saveEvaluation(currentTeamMember, evaluation);
+
+            renderEvaluations();
+        }
+
+        function saveNotes(competencyKey, field, value) {
+            if (!currentTeamMember) return;
+
+            const evaluation = getEvaluation(currentTeamMember);
+            if (!evaluation[competencyKey]) {
+                evaluation[competencyKey] = {};
+            }
+            evaluation[competencyKey][field] = value;
+            saveEvaluation(currentTeamMember, evaluation);
+        }
+
+        function renderDashboard() {
+            const content = document.getElementById('evaluationContent');
+
+            if (!currentTeamMember) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <h2>Select a team member to view dashboard</h2>
+                        <p>Choose a team member from the dropdown above to see their competency analytics.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const evaluation = getEvaluation(currentTeamMember);
+            const stats = calculateStats(evaluation);
+
+            let html = `
+                <div class="dashboard">
+                    <h2>Dashboard - ${currentTeamMember}</h2>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.totalCompetencies}</div>
+                            <div class="stat-label">Total Competencies</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.managerRated}</div>
+                            <div class="stat-label">Manager Ratings</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.employeeRated}</div>
+                            <div class="stat-label">Self-Assessments</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.completionPercent}%</div>
+                            <div class="stat-label">Completion Rate</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="chart-container">
+                            <h3>Manager Ratings by Level</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="managerRatingsChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h3>Self-Assessment by Level</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="employeeRatingsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="chart-container">
+                            <h3>Ratings by Category</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h3>Gap Analysis (Manager vs Expected)</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="gapChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Detailed Comparison</h3>
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Competency</th>
+                                    <th>Expected Level</th>
+                                    <th>Manager Rating</th>
+                                    <th>Self-Assessment</th>
+                                    <th>Gap to Expected</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            for (const [category, data] of Object.entries(competencies)) {
+                data.items.forEach(competency => {
+                    const key = `${category}_${competency.name}`;
+                    const managerRating = evaluation[key]?.managerRating || '-';
+                    const employeeRating = evaluation[key]?.employeeRating || '-';
+                    const gap = calculateGap(managerRating, competency.expectedLevel);
+
+                    html += `
+                        <tr>
+                            <td><strong>${competency.name}</strong><br><small style="color: #54698d;">${category}</small></td>
+                            <td><span class="level-badge level-${competency.expectedLevel.toLowerCase()}">${competency.expectedLevel}</span></td>
+                            <td>${managerRating !== '-' ? `<span class="level-badge level-${managerRating.toLowerCase()}">${managerRating}</span>` : '-'}</td>
+                            <td>${employeeRating !== '-' ? `<span class="level-badge level-${employeeRating.toLowerCase()}">${employeeRating}</span>` : '-'}</td>
+                            <td>${gap.html}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            content.innerHTML = html;
+
+            // Destroy existing charts
+            Object.values(charts).forEach(chart => chart.destroy());
+            charts = {};
+
+            // Create charts after DOM is ready
+            setTimeout(() => {
+                createManagerRatingsChart(stats.managerLevelCounts);
+                createEmployeeRatingsChart(stats.employeeLevelCounts);
+                createCategoryChart(stats.categoryData);
+                createGapChart(stats.gapData);
+            }, 0);
+        }
+
+        function calculateStats(evaluation) {
+            let totalCompetencies = 0;
+            let managerRated = 0;
+            let employeeRated = 0;
+            const managerLevelCounts = { Limited: 0, Standard: 0, Intermediate: 0, Advanced: 0 };
+            const employeeLevelCounts = { Limited: 0, Standard: 0, Intermediate: 0, Advanced: 0 };
+            const categoryData = {};
+            const gapData = { meetingExpectations: 0, exceedingExpectations: 0, belowExpectations: 0, notRated: 0 };
+
+            for (const [category, data] of Object.entries(competencies)) {
+                categoryData[category] = { manager: 0, employee: 0, total: 0 };
+
+                data.items.forEach(competency => {
+                    totalCompetencies++;
+                    categoryData[category].total++;
+
+                    const key = `${category}_${competency.name}`;
+                    const managerRating = evaluation[key]?.managerRating;
+                    const employeeRating = evaluation[key]?.employeeRating;
+
+                    if (managerRating) {
+                        managerRated++;
+                        managerLevelCounts[managerRating]++;
+                        categoryData[category].manager++;
+
+                        const gap = calculateGap(managerRating, competency.expectedLevel);
+                        if (gap.value === 0) gapData.meetingExpectations++;
+                        else if (gap.value > 0) gapData.exceedingExpectations++;
+                        else gapData.belowExpectations++;
+                    } else {
+                        gapData.notRated++;
+                    }
+
+                    if (employeeRating) {
+                        employeeRated++;
+                        employeeLevelCounts[employeeRating]++;
+                        categoryData[category].employee++;
+                    }
+                });
+            }
+
+            return {
+                totalCompetencies,
+                managerRated,
+                employeeRated,
+                completionPercent: Math.round((managerRated / totalCompetencies) * 100),
+                managerLevelCounts,
+                employeeLevelCounts,
+                categoryData,
+                gapData
+            };
+        }
+
+        function calculateGap(managerRating, expectedLevel) {
+            if (!managerRating || managerRating === '-') {
+                return { value: null, text: 'Not rated', html: '<span class="gap-indicator gap-neutral">Not rated</span>' };
+            }
+
+            const levels = { Limited: 1, Standard: 2, Intermediate: 3, Advanced: 4 };
+            const gap = levels[managerRating] - levels[expectedLevel];
+
+            if (gap === 0) {
+                return { value: 0, text: 'On target', html: '<span class="gap-indicator gap-positive">✓ On target</span>' };
+            } else if (gap > 0) {
+                return { value: gap, text: `+${gap} above`, html: `<span class="gap-indicator gap-positive">↑ +${gap} above</span>` };
+            } else {
+                return { value: gap, text: `${gap} below`, html: `<span class="gap-indicator gap-negative">↓ ${gap} below</span>` };
+            }
+        }
+
+        function createManagerRatingsChart(data) {
+            const ctx = document.getElementById('managerRatingsChart');
+            if (!ctx) return;
+
+            charts.managerRatings = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Limited', 'Standard', 'Intermediate', 'Advanced'],
+                    datasets: [{
+                        data: [data.Limited, data.Standard, data.Intermediate, data.Advanced],
+                        backgroundColor: ['#fef7e0', '#d4edda', '#cfe2ff', '#e0cffc'],
+                        borderColor: ['#a86403', '#155724', '#084298', '#5a1e9e'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createEmployeeRatingsChart(data) {
+            const ctx = document.getElementById('employeeRatingsChart');
+            if (!ctx) return;
+
+            charts.employeeRatings = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Limited', 'Standard', 'Intermediate', 'Advanced'],
+                    datasets: [{
+                        data: [data.Limited, data.Standard, data.Intermediate, data.Advanced],
+                        backgroundColor: ['#fef7e0', '#d4edda', '#cfe2ff', '#e0cffc'],
+                        borderColor: ['#a86403', '#155724', '#084298', '#5a1e9e'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createCategoryChart(data) {
+            const ctx = document.getElementById('categoryChart');
+            if (!ctx) return;
+
+            const categories = Object.keys(data);
+            const managerData = categories.map(cat => data[cat].manager);
+            const employeeData = categories.map(cat => data[cat].employee);
+
+            charts.category = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: categories.map(cat => cat.replace(' & ', '\n& ')),
+                    datasets: [
+                        {
+                            label: 'Manager Ratings',
+                            data: managerData,
+                            backgroundColor: '#0070d2',
+                        },
+                        {
+                            label: 'Self-Assessments',
+                            data: employeeData,
+                            backgroundColor: '#54698d',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createGapChart(data) {
+            const ctx = document.getElementById('gapChart');
+            if (!ctx) return;
+
+            charts.gap = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Exceeding', 'Meeting', 'Below', 'Not Rated'],
+                    datasets: [{
+                        label: 'Count',
+                        data: [data.exceedingExpectations, data.meetingExpectations, data.belowExpectations, data.notRated],
+                        backgroundColor: ['#d4edda', '#cfe2ff', '#f8d7da', '#f4f6f9'],
+                        borderColor: ['#155724', '#084298', '#721c24', '#d8dde6'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize on load
+        initApp();
+    </script>
+</body>
+</html>
